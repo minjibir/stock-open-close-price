@@ -13,6 +13,10 @@ class Data {
     private double close;
     private double high;
     private double low;
+
+    public String stockInfo() {
+        return date + " " + open + " " + close;
+    }
 }
 
 class StockInfo {
@@ -20,7 +24,15 @@ class StockInfo {
     private int perPage;
     private int total;
     private int totalPages;
-    private Data data;
+    private Data[] data;
+
+    public void setData(Data data[]) {
+        this.data = data;
+    }
+
+    public Data[] getData() {
+        return this.data;
+    }
 }
 
 public class Solution {
@@ -28,40 +40,62 @@ public class Solution {
      * Complete the function below.
      */
     static void openAndClosePrices(String firstDate, String lastDate, String weekDay) {
-        final String STOCK_API_BASE_URL = "https://jsonmoc.hackerrank.com/api/stocks";
-        URL stockApi;
-        HttpURLConnection stockUrlkConnection;
+        // https://jsonmock.hackerrank.com/api/stocks/search?key=value
+        String key, value;
+        key = "date";
+        value = "5-January-2000";
+        String url = "https://jsonmock.hackerrank.com/api/stocks/search?"+key+"="+value+"&"+"page=1";
+
+        System.out.println(url);
+
+        URL stockInfoUrl;
+        HttpURLConnection stockUrlConnection;
+        BufferedReader bufferedReader;
+        StringBuffer stockResponse;
 
         try {
-            stockApi = new URL(STOCK_API_BASE_URL);
-            stockUrlkConnection = (HttpURLConnection) stockApi.openConnection();
-            stockUrlkConnection.setRequestMethod("GET");
+            stockInfoUrl = new URL(url);
+            stockUrlConnection = (HttpURLConnection) stockInfoUrl.openConnection();
+            stockUrlConnection.setRequestMethod("GET");
+
+            bufferedReader = new BufferedReader(new InputStreamReader(stockUrlConnection.getInputStream()));
+            stockResponse = new StringBuffer();
+
+            bufferedReader.lines().forEach(stockResponse::append);
+            bufferedReader.close();
+
+            StockInfo stockInfo = new Gson().fromJson(stockResponse.toString(), StockInfo.class);
+
+            Arrays.stream(stockInfo.getData())
+                    .map(Data::stockInfo)
+                    .forEach(System.out::println);
+
         } catch (MalformedURLException e) {
             e.printStackTrace();
-        }catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public static void main(String[] args) {
-        Scanner in = new Scanner(System.in);
+        Scanner bufferedReader = new Scanner(System.in);
         String _firstDate;
         try {
-            _firstDate = in.nextLine();
+            _firstDate = bufferedReader.nextLine();
         } catch (Exception e) {
             _firstDate = null;
         }
 
         String _lastDate;
         try {
-            _lastDate = in.nextLine();
+            _lastDate = bufferedReader.nextLine();
         } catch (Exception e) {
             _lastDate = null;
         }
 
         String _weekDay;
         try {
-            _weekDay = in.nextLine();
+            _weekDay = bufferedReader.nextLine();
         } catch (Exception e) {
             _weekDay = null;
         }
